@@ -6,7 +6,8 @@
 	boolean hasHibernate = pluginManager?.hasGrailsPlugin('hibernate') || pluginManager?.hasGrailsPlugin('hibernate4')
 	if (hasHibernate) {
 		def GrailsDomainBinder = getClass().classLoader.loadClass('org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder')
-		if (GrailsDomainBinder.newInstance().getMapping(domainClass)?.identity?.generator == 'assigned') {
+		def identity = GrailsDomainBinder.newInstance().getMapping(domainClass)?.identity
+		if (identity && !(identity instanceof org.codehaus.groovy.grails.orm.hibernate.cfg.CompositeIdentity) && identity?.generator == 'assigned') {
 			persistentPropNames << domainClass.identifier.name
 		}
 	}

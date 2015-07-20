@@ -8,6 +8,8 @@ import grails.transaction.Transactional
 @Transactional(readOnly = true)
 class EventController {
 
+    static scaffold = true
+
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
     def index(Integer max) {
@@ -15,8 +17,9 @@ class EventController {
         respond Event.list(params), model:[eventInstanceCount: Event.count()]
     }
 
-    def show(Event eventInstance) {
-        respond eventInstance
+    def show(String id) {
+        println "arse"
+        respond Event.findByPublicationIdAndRevision(id, PublicationRevision.WORKING)
     }
 
     def create() {
@@ -40,14 +43,14 @@ class EventController {
         request.withFormat {
             form multipartForm {
                 flash.message = message(code: 'default.created.message', args: [message(code: 'event.label', default: 'Event'), eventInstance.id])
-                redirect eventInstance
+                redirect( action: 'show', id:eventInstance.publicationId)
             }
             '*' { respond eventInstance, [status: CREATED] }
         }
     }
 
-    def edit(Event eventInstance) {
-        respond eventInstance
+    def edit(String id) {
+        respond Event.findByPublicationIdAndRevision(id, PublicationRevision.WORKING)
     }
 
     @Transactional
@@ -67,7 +70,7 @@ class EventController {
         request.withFormat {
             form multipartForm {
                 flash.message = message(code: 'default.updated.message', args: [message(code: 'Event.label', default: 'Event'), eventInstance.id])
-                redirect eventInstance
+                redirect action:'show', id:eventInstance.publicationId
             }
             '*'{ respond eventInstance, [status: OK] }
         }
