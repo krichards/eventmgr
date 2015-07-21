@@ -1,16 +1,26 @@
 <%=packageName ? "package ${packageName}\n\n" : ''%>
 
+
+import eventmgr.Publishable
+
 import static org.springframework.http.HttpStatus.*
 import grails.transaction.Transactional
 
 @Transactional(readOnly = true)
 class ${className}Controller {
 
-    static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
+    static allowedMethods = [save: "POST", update: "PUT", delete: ["POST","DELETE"]]
 
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        respond ${className}.list(params), model:[${propertyName}Count: ${className}.count()]
+        def list = []
+//        if (Publishable.isAssignableFrom( ${className} )) {
+            // Only show working editions
+//            list = ${className}.findAllWhere([workingEdition:null], params)
+//        } else {
+            list = ${className}.list(params)
+//        }
+        respond list, model:[${propertyName}Count: ${className}.count()]
     }
 
     def show(${className} ${propertyName}) {
@@ -99,4 +109,44 @@ class ${className}Controller {
             '*'{ render status: NOT_FOUND }
         }
     }
+
+    @Transactional
+    def publish(${className} ${propertyName}) {
+
+        if (!${propertyName} instanceof Publishable) {
+            notFound()
+            return
+        }
+
+        if (${propertyName}.publishableType == PublishableType.PUBLISHED) {
+            throw new IllegalStateException("Cannot publish something that's published")
+        }
+
+        if (${propertyName}.hasErrors()) {
+            respond ${propertyName}.errors, view:'edit'
+            return
+        }
+
+        def publishedRevision = ${className}.findByWorkingEdition(${propertyName})
+        if (publishedRevision == null) {
+            println "Cloning"
+            publishedRevision = ${propertyName}.clone()
+            publishedRevision.publishableType = PublishableType.PUBLISHED
+        } else {
+            println "Copying"
+            publishedRevision.copy(${propertyName})
+            publishedRevision.publishableType = PublishableType.PUBLISHED
+        }
+        publishedRevision.workingEdition=${propertyName}
+        publishedRevision.save flush:true
+
+        request.withFormat {
+            form multipartForm {
+                flash.message = message(code: 'default.published.message', args: [message(code: '${className}.label', default: '${className}'), ${propertyName}.id])
+                redirect ${propertyName}
+            }
+            '*'{ respond ${propertyName}, [status: OK] }
+        }
+    }
+
 }

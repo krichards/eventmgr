@@ -49,10 +49,13 @@
 				</g:if>
 			<%  } %>
 			</ol>
-			<g:form url="[resource:${propertyName}, action:'delete']" method="DELETE">
+			<g:form url="[resource:${propertyName}, action:'show']" method="POST">
 				<fieldset class="buttons">
 					<g:link class="edit" action="edit" resource="\${${propertyName}}"><g:message code="default.button.edit.label" default="Edit" /></g:link>
-					<g:actionSubmit class="delete" action="delete" value="\${message(code: 'default.button.delete.label', default: 'Delete')}" onclick="return confirm('\${message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');" />
+					<g:actionSubmit class="delete" action="delete" method="DELETE" value="\${message(code: 'default.button.delete.label', default: 'Delete')}" onclick="return confirm('\${message(code: 'default.button.delete.confirm.message', default: 'Are you sure?')}');" />
+				    <g:if test="${propertyName instanceof eventmgr.Publishable && propertyName.publishableType == eventmgr.PublishableType.WORKING}">
+						<g:actionSubmit class="publish" action="publish" method="POST" resource="\${${propertyName}}" value="\${message(code: 'default.button.publish.label', default: 'Publish')}" />
+					</g:if>
 				</fieldset>
 			</g:form>
 		</div>

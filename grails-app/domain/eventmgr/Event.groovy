@@ -1,6 +1,6 @@
 package eventmgr
 
-class Event {
+class Event extends Publishable {
 
     String name
     Date start
@@ -13,32 +13,12 @@ class Event {
         start required: true
         end required: false, nullable: true
         venue nullable: true, required: false
+        workingEdition  isEditable: false
     }
     static hasMany = [speakers: Speaker]
 
     public String toString() {
         return "$name ${start}"
     }
-
-    void publish() {
-        // Insert JSON representation
-
-        // or
-
-        // Finds existing published or creates new published version copyng current state
-        // Id is assigned including published state
-        // audit data includes name etc
-
-        // Json converter uses state to determine conversion ...
-        // Web page uses tags to render state
-    }
-
-//    Event getVersion(PublishedState published) {
-//        if (published == this.state) {
-//            return this
-//        } else {
-//            return Event.findByIdAndPublishedState(this.id, published);
-//        }
-//    }
 
 }
