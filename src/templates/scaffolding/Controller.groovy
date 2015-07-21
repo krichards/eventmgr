@@ -118,27 +118,7 @@ class ${className}Controller {
             return
         }
 
-        if (${propertyName}.publishableType == PublishableType.PUBLISHED) {
-            throw new IllegalStateException("Cannot publish something that's published")
-        }
-
-        if (${propertyName}.hasErrors()) {
-            respond ${propertyName}.errors, view:'edit'
-            return
-        }
-
-        def publishedRevision = ${className}.findByWorkingEdition(${propertyName})
-        if (publishedRevision == null) {
-            println "Cloning"
-            publishedRevision = ${propertyName}.clone()
-            publishedRevision.publishableType = PublishableType.PUBLISHED
-        } else {
-            println "Copying"
-            publishedRevision.copy(${propertyName})
-            publishedRevision.publishableType = PublishableType.PUBLISHED
-        }
-        publishedRevision.workingEdition=${propertyName}
-        publishedRevision.save flush:true
+        ${propertyName}.publish()
 
         request.withFormat {
             form multipartForm {
